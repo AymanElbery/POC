@@ -1,0 +1,217 @@
+<div class="container">
+  <header class="header">
+    <h1>🐰 {{ title }}</h1>
+    <div class="connection-status">
+      <span class="status-indicator" [class.connected]="isWebSocketConnected" [class.disconnected]="!isWebSocketConnected">
+        {{ isWebSocketConnected ? '🟢 Connected' : '🔴 Disconnected' }}
+      </span>
+      @if (isWebSocketConnected!) {
+      <button (click)="reconnectWebSocket()" class="btn btn-small">
+        🔄 Reconnect
+      </button>
+      }
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Job Creation Section -->
+    <section class="card">
+      <h2>📝 Create New Job</h2>
+      
+      <div class="form-group">
+        <label for="jobType">Job Type:</label>
+        <select 
+          id="jobType" 
+          [(ngModel)]="selectedJobType" 
+          (change)="onJobTypeChange()"
+          class="form-control">
+          <option value="data_processing">📊 Data Processing</option>
+          <option value="file_conversion">📄 File Conversion</option>
+          <option value="report_generation">📈 Report Generation</option>
+        </select>
+      </div>
+
+      <!-- Dynamic form based on job type -->
+      <div class="form-group" [ngSwitch]="selectedJobType">
+        <!-- Data Processing Form -->
+        <div *ngSwitchCase="'data_processing'">
+          <label>Processing Steps:</label>
+          <input 
+            type="number" 
+            [(ngModel)]="jobData.data_processing.steps" 
+            min="1" 
+            max="20"
+            class="form-control">
+          
+          <label>Delay per Step (seconds):</label>
+          <input 
+            type="number" 
+            [(ngModel)]="jobData.data_processing.delay" 
+            min="0.5" 
+            max="5" 
+            step="0.5"
+            class="form-control">
+        </div>
+
+        <!-- File Conversion Form -->
+        <div *ngSwitchCase="'file_conversion'">
+          <label>Filename:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="jobData.file_conversion.filename" 
+            class="form-control"
+            placeholder="document.pdf">
+          
+          <label>File Size (KB):</label>
+          <input 
+            type="number" 
+            [(ngModel)]="jobData.file_conversion.size" 
+            min="100" 
+            max="10000"
+            class="form-control">
+        </div>
+
+        <!-- Report Generation Form -->
+        <div *ngSwitchCase="'report_generation'">
+          <label>Report Type:</label>
+          <select [(ngModel)]="jobData.report_generation.type" class="form-control">
+            <option value="daily">Daily Report</option>
+            <option value="weekly">Weekly Report</option>
+            <option value="monthly">Monthly Report</option>
+            <option value="quarterly">Quarterly Report</option>
+          </select>
+          
+          <label>Number of Sections:</label>
+          <input 
+            type="number" 
+            [(ngModel)]="jobData.report_generation.sections.length" 
+            min="2" 
+            max="8"
+            class="form-control">
+        </div>
+      </div>
+
+      <button 
+        (click)="createJob()" 
+        [disabled]="isCreatingJob || !isWebSocketConnected"
+        class="btn btn-primary">
+        <span *ngIf="isCreatingJob">⏳ Creating...</span>
+        <span *ngIf="!isCreatingJob">🚀 Create Job</span>
+      </button>
+    </section>
+
+    <!-- Queue Statistics -->
+    <section class="card">
+      <h2>📊 Queue Statistics</h2>
+      <button (click)="loadQueueStats()" [disabled]="isLoadingStats" class="btn btn-secondary btn-small">
+        <span *ngIf="isLoadingStats">⏳ Loading...</span>
+        <span *ngIf="!isLoadingStats">🔄 Refresh</span>
+      </button>
+      
+      <div *ngIf="queueStats" class="stats-grid">
+        <div class="stat-item">
+          <h4>Job Queue</h4>
+          <p>📥 Messages: {{ queueStats.jobQueue.messageCount }}</p>
+          <p>👥 Consumers: {{ queueStats.jobQueue.consumerCount }}</p>
+        </div>
+        <div class="stat-item">
+          <h4>Result Queue</h4>
+          <p>📤 Messages: {{ queueStats.resultQueue.messageCount }}</p>
+          <p>👥 Consumers: {{ queueStats.resultQueue.consumerCount }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Active Jobs -->
+    <section class="card">
+      <h2>⚡ Active Jobs ({{ activeJobs.length }})</h2>
+      
+      <div *ngIf="activeJobs.length === 0" class="empty-state">
+        <p>No active jobs. Create a job to see real-time progress!</p>
+      </div>
+
+      <div *ngFor="let job of activeJobs; trackBy: trackByJobId" class="job-item">
+        <div class="job-header">
+          <h4>{{ getStatusIcon(job.status) }} Job {{ job.jobId.substring(0, 8) }}...</h4>
+          <span class="job-status" [class]="job.status">{{ job.status.toUpperCase() }}</span>
+        </div>
+        
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div 
+              class="progress-fill" 
+              [class]="job.status"
+              [style.width.%]="job.progress">
+            </div>
+          </div>
+          <span class="progress-text">{{ job.progress }}%</span>
+        </div>
+        
+        <p class="job-message">{{ job.message }}</p>
+        <small class="job-time">{{ formatTimestamp(job.timestamp) }}</small>
+        
+        <div *ngIf="job.result" class="job-result">
+          <h5>📋 Result:</h5>
+          <pre>{{ formatJobData(job.result) }}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Completed Jobs -->
+    <section class="card">
+      <div class="section-header">
+        <h2>✅ Completed Jobs ({{ completedJobs.length }})</h2>
+        <button 
+          *ngIf="completedJobs.length > 0" 
+          (click)="clearCompletedJobs()" 
+          class="btn btn-secondary btn-small">
+          🗑️ Clear
+        </button>
+      </div>
+      
+      <div *ngIf="completedJobs.length === 0" class="empty-state">
+        <p>No completed jobs yet.</p>
+      </div>
+
+      <div *ngFor="let job of completedJobs; trackBy: trackByJobId" class="job-item completed">
+        <div class="job-header">
+          <h4>{{ getStatusIcon(job.status) }} Job {{ job.jobId.substring(0, 8) }}...</h4>
+          <span class="job-status" [class]="job.status">{{ job.status.toUpperCase() }}</span>
+        </div>
+        
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div 
+              class="progress-fill" 
+              [class]="job.status"
+              [style.width.%]="job.progress">
+            </div>
+          </div>
+          <span class="progress-text">{{ job.progress }}%</span>
+        </div>
+        
+        <p class="job-message">{{ job.message }}</p>
+        <small class="job-time">{{ formatTimestamp(job.timestamp) }}</small>
+        
+        <div *ngIf="job.result" class="job-result">
+          <h5>📋 Result:</h5>
+          <pre>{{ formatJobData(job.result) }}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Connection Testing -->
+    <section class="card">
+      <h2>🔧 Connection Testing</h2>
+      <button (click)="testWebSocketConnection()" class="btn btn-secondary">
+        🏓 Test Connection
+      </button>
+      <p class="help-text">Check browser console for connection test results.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Built with Angular 20, Node.js, Python, RabbitMQ & Socket.IO</p>
+    <p>Check the browser console for detailed logs 📝</p>
+  </footer>
+</div>

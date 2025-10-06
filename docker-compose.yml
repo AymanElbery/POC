@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  api-producer:
+    build: ./api-producer
+    container_name: api-producer
+    ports:
+      - "3001:3001"
+    environment:
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - PORT=3001
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  python-worker:
+    build: ./python-worker
+    container_name: python-worker
+    environment:
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    # create a volume for edition code without rebuild the image
+    volumes:
+      - ./python-worker:/app
+    # deploy:
+    #   replicas: 2
+
+  websocket-server:
+    build: ./websocket-server
+    container_name: websocket-server
+    ports:
+      - "3002:3002"
+    environment:
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - PORT=3002
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # angular-app:
+  #   build: ./angular-app
+  #   container_name: angular-app
+  #   ports:
+  #     - "4200:80"
+  #   depends_on:
+  #     - api-producer
+  #     - websocket-server
+
+volumes:
+  rabbitmq_data:
