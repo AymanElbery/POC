@@ -20,6 +20,9 @@ This project demonstrates a real-world async processing pipeline with real-time 
 - **🔌 WebSocket Server**: Real-time communication via Socket.IO
 - **🐰 RabbitMQ**: Message queue for reliable job processing
 
+![Screenshot 1](https://raw.githubusercontent.com/AymanElbery/rabbitmq-angular-poc/refs/heads/dev/images/RabbitMQ%20and%20Angular%20POC%20-%20visual%20selection.png)
+
+
 ## ✨ Features
 
 - ✅ Real-time job progress tracking with dynamic color-coded progress bars
@@ -31,6 +34,9 @@ This project demonstrates a real-world async processing pipeline with real-time 
 - ✅ Job history and completion tracking
 - ✅ Connection health monitoring and auto-reconnection
 - ✅ Scalable worker instances for high throughput
+
+
+![Screenshot 2](https://raw.githubusercontent.com/AymanElbery/rabbitmq-angular-poc/refs/heads/dev/images/RabbitMQ%20and%20Angular%20POC%20-%20visual%20selection2.png)
 
 ## 🛠️ Technology Stack
 
@@ -85,6 +91,9 @@ ng serve --host 0.0.0.0 --port 4200
 
 📡 WebSocket Health: http://localhost:3002/health
 
+
+
+![Screenshot 2](https://raw.githubusercontent.com/AymanElbery/rabbitmq-angular-poc/refs/heads/dev/images/RabbitMQ%20and%20Angular%20POC%20-%20visual%20selection3.png)
 
 
 
