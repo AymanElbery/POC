@@ -51,16 +51,16 @@ class JobWorker:
                 # Set QoS for fair dispatching
                 self.channel.basic_qos(prefetch_count=self.prefetch_count)
                 
-                logger.info("✅ Connected to RabbitMQ successfully")
+                logger.info("Connected to RabbitMQ successfully")
                 return True
                 
             except Exception as e:
-                logger.error(f"❌ Failed to connect to RabbitMQ: {e}")
+                logger.error(f"Failed to connect to RabbitMQ: {e}")
                 if attempt < max_retries - 1:
-                    logger.info(f"⏳ Retrying in {retry_delay} seconds...")
+                    logger.info(f"Retrying in {retry_delay} seconds...")
                     time.sleep(retry_delay)
                 else:
-                    logger.error("❌ Max connection attempts reached")
+                    logger.error("Max connection attempts reached")
                     return False
         
         return False
@@ -71,7 +71,7 @@ class JobWorker:
         job_type = job_data['type']
         data = job_data['data']
         
-        logger.info(f"📋 Processing job {job_id} of type {job_type}")
+        logger.info(f"Processing job {job_id} of type {job_type}")
         
         try:
             # Send initial progress
@@ -87,7 +87,7 @@ class JobWorker:
                 raise ValueError(f"Unknown job type: {job_type}")
                 
         except Exception as e:
-            logger.error(f"❌ Error processing job {job_id}: {e}")
+            logger.error(f"Error processing job {job_id}: {e}")
             self.send_progress(job_id, 0, f"Job failed: {str(e)}", "failed")
             raise
     
@@ -107,7 +107,7 @@ class JobWorker:
             message = f"Processing step {step}/{total_steps}"
             
             self.send_progress(job_id, progress, message, "processing")
-            logger.info(f"📊 Job {job_id}: {message} ({progress}%)")
+            logger.info(f"Job {job_id}: {message} ({progress}%)")
         
         # Job completed
         result = {
@@ -199,7 +199,7 @@ class JobWorker:
             )
             
         except Exception as e:
-            logger.error(f"❌ Failed to send progress update: {e}")
+            logger.error(f"Failed to send progress update: {e}")
     
     def process_message(self, channel, method, properties, body):
         """Process incoming job message"""
@@ -207,21 +207,21 @@ class JobWorker:
             job_data = json.loads(body.decode('utf-8'))
             job_id = job_data['id']
             
-            logger.info(f"📥 Received job: {job_id}")
+            logger.info(f"Received job: {job_id}")
             
             # Process the job
             result = self.process_job(job_data)
             
             # Acknowledge the message
             channel.basic_ack(delivery_tag=method.delivery_tag)
-            logger.info(f"✅ Job {job_id} completed successfully")
+            logger.info(f"Job {job_id} completed successfully")
             
         except json.JSONDecodeError as e:
-            logger.error(f"❌ Invalid JSON in message: {e}")
+            logger.error(f"Invalid JSON in message: {e}")
             channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
             
         except Exception as e:
-            logger.error(f"❌ Error processing message: {e}")
+            logger.error(f"Error processing message: {e}")
             
             # Check retry count
             retry_count = getattr(properties, 'headers', {}).get('x-retry-count', 0)
@@ -235,9 +235,9 @@ class JobWorker:
                     body=body,
                     properties=pika.BasicProperties(headers=headers, delivery_mode=2)
                 )
-                logger.info(f"🔄 Requeued message (retry {retry_count + 1}/{self.max_retries})")
+                logger.info(f"Requeued message (retry {retry_count + 1}/{self.max_retries})")
             else:
-                logger.error(f"❌ Max retries reached, sending to DLQ")
+                logger.error(f"Max retries reached, sending to DLQ")
             
             channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
     
@@ -249,16 +249,16 @@ class JobWorker:
                 on_message_callback=self.process_message
             )
             
-            logger.info("🔄 Worker started. Waiting for jobs...")
-            logger.info("📊 Press CTRL+C to exit")
+            logger.info("Worker started. Waiting for jobs...")
+            logger.info("Press CTRL+C to exit")
             
             self.channel.start_consuming()
             
         except KeyboardInterrupt:
-            logger.info("📴 Stopping worker...")
+            logger.info("Stopping worker...")
             self.stop()
         except Exception as e:
-            logger.error(f"❌ Error in consumer: {e}")
+            logger.error(f"Error in consumer: {e}")
             raise
     
     def stop(self):
@@ -271,11 +271,11 @@ class JobWorker:
         if self.connection and not self.connection.is_closed:
             self.connection.close()
             
-        logger.info("✅ Worker stopped gracefully")
+        logger.info("Worker stopped gracefully")
 
 def signal_handler(signum, frame):
     """Handle shutdown signals"""
-    logger.info(f"📡 Received signal {signum}")
+    logger.info(f"Received signal {signum}")
     worker.stop()
     sys.exit(0)
 
@@ -289,5 +289,5 @@ if __name__ == "__main__":
     if worker.connect():
         worker.start_consuming()
     else:
-        logger.error("❌ Failed to start worker")
+        logger.error("Failed to start worker")
         sys.exit(1)

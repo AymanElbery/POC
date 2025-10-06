@@ -1,13 +1,13 @@
 <div class="container">
   <header class="header">
-    <h1>🐰 {{ title }}</h1>
+    <h1>{{ title }}</h1>
     <div class="connection-status">
       <span class="status-indicator" [class.connected]="isWebSocketConnected" [class.disconnected]="!isWebSocketConnected">
         {{ isWebSocketConnected ? '🟢 Connected' : '🔴 Disconnected' }}
       </span>
       @if (isWebSocketConnected!) {
       <button (click)="reconnectWebSocket()" class="btn btn-small">
-        🔄 Reconnect
+        Reconnect
       </button>
       }
     </div>
@@ -25,9 +25,9 @@
           [(ngModel)]="selectedJobType" 
           (change)="onJobTypeChange()"
           class="form-control">
-          <option value="data_processing">📊 Data Processing</option>
-          <option value="file_conversion">📄 File Conversion</option>
-          <option value="report_generation">📈 Report Generation</option>
+          <option value="data_processing">Data Processing</option>
+          <option value="file_conversion">File Conversion</option>
+          <option value="report_generation">Report Generation</option>
         </select>
       </div>
 
@@ -95,36 +95,36 @@
         (click)="createJob()" 
         [disabled]="isCreatingJob || !isWebSocketConnected"
         class="btn btn-primary">
-        <span *ngIf="isCreatingJob">⏳ Creating...</span>
-        <span *ngIf="!isCreatingJob">🚀 Create Job</span>
+        <span *ngIf="isCreatingJob">Creating...</span>
+        <span *ngIf="!isCreatingJob">Create Job</span>
       </button>
     </section>
 
     <!-- Queue Statistics -->
     <section class="card">
-      <h2>📊 Queue Statistics</h2>
+      <h2>Queue Statistics</h2>
       <button (click)="loadQueueStats()" [disabled]="isLoadingStats" class="btn btn-secondary btn-small">
-        <span *ngIf="isLoadingStats">⏳ Loading...</span>
-        <span *ngIf="!isLoadingStats">🔄 Refresh</span>
+        <span *ngIf="isLoadingStats">Loading...</span>
+        <span *ngIf="!isLoadingStats">Refresh</span>
       </button>
       
       <div *ngIf="queueStats" class="stats-grid">
         <div class="stat-item">
           <h4>Job Queue</h4>
-          <p>📥 Messages: {{ queueStats.jobQueue.messageCount }}</p>
-          <p>👥 Consumers: {{ queueStats.jobQueue.consumerCount }}</p>
+          <p>Messages: {{ queueStats.jobQueue.messageCount }}</p>
+          <p>Consumers: {{ queueStats.jobQueue.consumerCount }}</p>
         </div>
         <div class="stat-item">
           <h4>Result Queue</h4>
-          <p>📤 Messages: {{ queueStats.resultQueue.messageCount }}</p>
-          <p>👥 Consumers: {{ queueStats.resultQueue.consumerCount }}</p>
+          <p>Messages: {{ queueStats.resultQueue.messageCount }}</p>
+          <p>Consumers: {{ queueStats.resultQueue.consumerCount }}</p>
         </div>
       </div>
     </section>
 
     <!-- Active Jobs -->
     <section class="card">
-      <h2>⚡ Active Jobs ({{ activeJobs.length }})</h2>
+      <h2>Active Jobs ({{ activeJobs.length }})</h2>
       
       <div *ngIf="activeJobs.length === 0" class="empty-state">
         <p>No active jobs. Create a job to see real-time progress!</p>
@@ -151,7 +151,7 @@
         <small class="job-time">{{ formatTimestamp(job.timestamp) }}</small>
         
         <div *ngIf="job.result" class="job-result">
-          <h5>📋 Result:</h5>
+          <h5>Result:</h5>
           <pre>{{ formatJobData(job.result) }}</pre>
         </div>
       </div>
@@ -160,12 +160,12 @@
     <!-- Completed Jobs -->
     <section class="card">
       <div class="section-header">
-        <h2>✅ Completed Jobs ({{ completedJobs.length }})</h2>
+        <h2>Completed Jobs ({{ completedJobs.length }})</h2>
         <button 
           *ngIf="completedJobs.length > 0" 
           (click)="clearCompletedJobs()" 
           class="btn btn-secondary btn-small">
-          🗑️ Clear
+          Clear
         </button>
       </div>
       
@@ -194,7 +194,7 @@
         <small class="job-time">{{ formatTimestamp(job.timestamp) }}</small>
         
         <div *ngIf="job.result" class="job-result">
-          <h5>📋 Result:</h5>
+          <h5>Result:</h5>
           <pre>{{ formatJobData(job.result) }}</pre>
         </div>
       </div>
@@ -202,9 +202,9 @@
 
     <!-- Connection Testing -->
     <section class="card">
-      <h2>🔧 Connection Testing</h2>
+      <h2>Connection Testing</h2>
       <button (click)="testWebSocketConnection()" class="btn btn-secondary">
-        🏓 Test Connection
+       Test Connection
       </button>
       <p class="help-text">Check browser console for connection test results.</p>
     </section>
@@ -212,6 +212,6 @@
 
   <footer class="footer">
     <p>Built with Angular 20, Node.js, Python, RabbitMQ & Socket.IO</p>
-    <p>Check the browser console for detailed logs 📝</p>
+    <p>Check the browser console for detailed logs </p>
   </footer>
 </div>

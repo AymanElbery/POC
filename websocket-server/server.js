@@ -42,14 +42,14 @@ async function connectRabbitMQ() {
     // Assert result queue
     await channel.assertQueue(QUEUES.RESULT_QUEUE, { durable: true });
 
-    console.log('✅ WebSocket server connected to RabbitMQ');
+    console.log('WebSocket server connected to RabbitMQ');
 
     // Start consuming result messages
     await channel.consume(QUEUES.RESULT_QUEUE, (message) => {
       if (message) {
         try {
           const result = JSON.parse(message.content.toString());
-          console.log('📨 Received result:', result.jobId, result.status);
+          console.log('Received result:', result.jobId, result.status);
 
           // Broadcast to all connected clients or specific job subscribers
           broadcastJobUpdate(result);
@@ -57,7 +57,7 @@ async function connectRabbitMQ() {
           // Acknowledge the message
           channel.ack(message);
         } catch (error) {
-          console.error('❌ Error processing result message:', error);
+          console.error('Error processing result message:', error);
           channel.nack(message, false, false);
         }
       }
@@ -65,17 +65,17 @@ async function connectRabbitMQ() {
 
     // Handle connection events
     connection.on('error', (err) => {
-      console.error('❌ RabbitMQ connection error:', err);
+      console.error('RabbitMQ connection error:', err);
       setTimeout(connectRabbitMQ, 5000);
     });
 
     connection.on('close', () => {
-      console.log('🔌 RabbitMQ connection closed');
+      console.log('RabbitMQ connection closed');
       setTimeout(connectRabbitMQ, 5000);
     });
 
   } catch (error) {
-    console.error('❌ Failed to connect to RabbitMQ:', error);
+    console.error('Failed to connect to RabbitMQ:', error);
     setTimeout(connectRabbitMQ, 5000);
   }
 }
@@ -103,12 +103,12 @@ function broadcastJobUpdate(jobUpdate) {
     timestamp
   });
 
-  console.log(`📡 Broadcasted update for job ${jobId}: ${status} (${progress}%)`);
+  console.log(`Broadcasted update for job ${jobId}: ${status} (${progress}%)`);
 }
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
-  console.log(`🔌 Client connected: ${socket.id}`);
+  console.log(`Client connected: ${socket.id}`);
   
   // Store connection info
   activeConnections.set(socket.id, {
@@ -125,7 +125,7 @@ io.on('connection', (socket) => {
 
   // Handle job subscription
   socket.on('subscribe_job', (jobId) => {
-    console.log(`📥 Client ${socket.id} subscribed to job ${jobId}`);
+    console.log(`Client ${socket.id} subscribed to job ${jobId}`);
     socket.join(`job_${jobId}`);
     
     const connectionInfo = activeConnections.get(socket.id);
@@ -138,7 +138,7 @@ io.on('connection', (socket) => {
 
   // Handle job unsubscription
   socket.on('unsubscribe_job', (jobId) => {
-    console.log(`📤 Client ${socket.id} unsubscribed from job ${jobId}`);
+    console.log(`Client ${socket.id} unsubscribed from job ${jobId}`);
     socket.leave(`job_${jobId}`);
     
     const connectionInfo = activeConnections.get(socket.id);
@@ -166,7 +166,7 @@ io.on('connection', (socket) => {
 
   // Handle disconnection
   socket.on('disconnect', (reason) => {
-    console.log(`🔌 Client disconnected: ${socket.id} (${reason})`);
+    console.log(`Client disconnected: ${socket.id} (${reason})`);
     
     // Clean up
     activeConnections.delete(socket.id);
@@ -182,7 +182,7 @@ io.on('connection', (socket) => {
 
   // Handle errors
   socket.on('error', (error) => {
-    console.error(`❌ Socket error from ${socket.id}:`, error);
+    console.error(`Socket error from ${socket.id}:`, error);
   });
 });
 
@@ -211,8 +211,8 @@ app.get('/api/stats', (req, res) => {
 
 // Start server
 server.listen(PORT, () => {
-  console.log(`🚀 WebSocket server running on port ${PORT}`);
-  console.log(`📡 Socket.IO server ready for connections`);
+  console.log(`WebSocket server running on port ${PORT}`);
+  console.log(`Socket.IO server ready for connections`);
 });
 
 // Initialize RabbitMQ connection
@@ -220,7 +220,7 @@ connectRabbitMQ();
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
-  console.log('📴 Shutting down WebSocket server...');
+  console.log('Shutting down WebSocket server...');
   
   // Close all socket connections
   io.close();
@@ -231,12 +231,12 @@ process.on('SIGINT', async () => {
   
   // Close HTTP server
   server.close(() => {
-    console.log('✅ WebSocket server shut down gracefully');
+    console.log('WebSocket server shut down gracefully');
     process.exit(0);
   });
 });
 
 // Handle unhandled rejections
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });

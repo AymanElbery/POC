@@ -43,7 +43,7 @@ async function connectRabbitMQ() {
       });
     } catch (error) {
       if (error.message.includes('PRECONDITION_FAILED')) {
-        console.log('⚠️ Queue exists with different config, deleting and recreating...');
+        console.log('Queue exists with different config, deleting and recreating...');
         try {
           await channel.deleteQueue(QUEUES.JOB_QUEUE);
           await channel.assertQueue(QUEUES.JOB_QUEUE, {
@@ -54,7 +54,7 @@ async function connectRabbitMQ() {
             }
           });
         } catch (deleteError) {
-          console.log('⚠️ Could not delete queue, creating without DLX...');
+          console.log('Could not delete queue, creating without DLX...');
           await channel.assertQueue(QUEUES.JOB_QUEUE, { durable: true });
         }
       } else {
@@ -67,21 +67,21 @@ async function connectRabbitMQ() {
       durable: true
     });
 
-    console.log('✅ Connected to RabbitMQ');
+    console.log('Connected to RabbitMQ');
 
     // Handle connection events
     connection.on('error', (err) => {
-      console.error('❌ RabbitMQ connection error:', err);
+      console.error('RabbitMQ connection error:', err);
       setTimeout(connectRabbitMQ, 5000);
     });
 
     connection.on('close', () => {
-      console.log('🔌 RabbitMQ connection closed');
+      console.log('RabbitMQ connection closed');
       setTimeout(connectRabbitMQ, 5000);
     });
 
   } catch (error) {
-    console.error('❌ Failed to connect to RabbitMQ:', error);
+    console.error('Failed to connect to RabbitMQ:', error);
     setTimeout(connectRabbitMQ, 5000);
   }
 }
@@ -134,7 +134,7 @@ app.post('/api/jobs', async (req, res) => {
       }
     );
 
-    console.log(`📤 Job enqueued: ${jobId}`);
+    console.log(`Job enqueued: ${jobId}`);
 
     res.status(201).json({
       success: true,
@@ -143,7 +143,7 @@ app.post('/api/jobs', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error creating job:', error);
+    console.error('Error creating job:', error);
     res.status(500).json({ error: 'Failed to create job' });
   }
 });
@@ -179,18 +179,18 @@ app.get('/api/stats', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Error getting stats:', error);
+    console.error('Error getting stats:', error);
     res.status(500).json({ error: 'Failed to get stats' });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 API Producer server running on port ${PORT}`);
+  console.log(`API Producer server running on port ${PORT}`);
 });
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
-  console.log('📴 Shutting down API Producer...');
+  console.log('Shutting down API Producer...');
   if (channel) await channel.close();
   if (connection) await connection.close();
   process.exit(0);
